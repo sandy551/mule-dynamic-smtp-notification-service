@@ -1,0 +1,348 @@
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:email="http://www.mulesoft.org/schema/mule/email"
+	xmlns:json="http://www.mulesoft.org/schema/mule/json" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
+	http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+	http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd">
+    
+    <apikit:config api="resource::f9e96ea8-428f-4b08-9cc9-c00311546a98:mule-notification-service-spec:1.0.0:oas:zip:mule-notification-service-spec.yaml" httpStatusVarName="httpStatus" name="mule-notification-service-spec-config" outboundHeadersMapName="outboundHeaders"></apikit:config>
+    <flow name="mule-notification-service-spec-main">
+        <http:listener config-ref="Listener-config" path="${http.path}">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <ee:transform doc:id="mldyvq" doc:name="inbound &amp; correlationId">
+            <ee:variables>
+        <ee:set-variable variableName="inbound" resource="dwl/inbound.dwl"/>
+        <ee:set-variable variableName="correlationID"><![CDATA[correlationId]]></ee:set-variable>
+      </ee:variables>
+        </ee:transform>
+        <logger doc:id="jxnwtd" doc:name="Start Logger" message="#[flow.name] Started, inbound-details:#[vars.inbound]"></logger>
+        <apikit:router config-ref="mule-notification-service-spec-config"></apikit:router>
+        <error-handler>
+            <on-error-propagate type="APIKIT:BAD_REQUEST">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json  
+---
+{
+  "error": {
+    "correlationId": correlationId,
+    "timeStamp": now() as String {format: "yyyy-MM-dd'T'HH:mm:ss'Z'"},
+    "statusCode": error.errorMessage.attributes.statusCode default 400,
+    "errorType": (error.errorType.namespace default "MULE") ++ ":" ++ (error.errorType.identifier default "ANY"),
+    "description": error.description,
+    "failedComponent": error.failingComponent default "unknown",
+    "reason": error.errorType.identifier default "INTERNAL_SERVER_ERROR",
+    "details": {
+      "message": error.detailedDescription default "Bad request",
+      "path": attributes.requestPath default "N/A"
+    }
+  }
+}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[error.errorMessage.attributes.statusCode default 400]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+        <logger doc:name="Error Logger" doc:id="twftar" message="#[%dw 2.0
+output application/json
+---
+  payload]" level="ERROR"/>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json  
+---
+{
+  "error": {
+    "correlationId": correlationId,
+    "timeStamp": now() as String {format: "yyyy-MM-dd'T'HH:mm:ss'Z'"},
+    "statusCode": error.errorMessage.attributes.statusCode default 404,
+    "errorType": (error.errorType.namespace default "MULE") ++ ":" ++ (error.errorType.identifier default "ANY"),
+    "description": error.description,
+    "failedComponent": error.failingComponent default "unknown",
+    "reason": error.errorType.identifier default "INTERNAL_SERVER_ERROR",
+    "details": {
+      "message": error.detailedDescription default "Resource not found",
+      "path": attributes.requestPath default "N/A"
+    }
+  }
+}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[error.errorMessage.attributes.statusCode default 404]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+                <logger doc:name="Error Logger" doc:id="twftar2dq" message="#[%dw 2.0
+output application/json
+---
+  payload]" level="ERROR"/>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json  
+---
+{
+  "error": {
+    "correlationId": correlationId,
+    "timeStamp": now() as String {format: "yyyy-MM-dd'T'HH:mm:ss'Z'"},
+    "statusCode": error.errorMessage.attributes.statusCode default 405,
+    "errorType": (error.errorType.namespace default "MULE") ++ ":" ++ (error.errorType.identifier default "ANY"),
+    "description": error.description,
+    "failedComponent": error.failingComponent default "unknown",
+    "reason": error.errorType.identifier default "INTERNAL_SERVER_ERROR",
+    "details": {
+      "message": error.detailedDescription default "Method not allowed",
+      "path": attributes.requestPath default "N/A"
+    }
+  }
+}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[error.errorMessage.attributes.statusCode default 405]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+                <logger doc:name="Error Logger" doc:id="twftar2" message="#[%dw 2.0
+output application/json
+---
+  payload]" level="ERROR"/>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json  
+---
+{
+  "error": {
+    "correlationId": correlationId,
+    "timeStamp": now() as String {format: "yyyy-MM-dd'T'HH:mm:ss'Z'"},
+    "statusCode": error.errorMessage.attributes.statusCode default 406,
+    "errorType": (error.errorType.namespace default "MULE") ++ ":" ++ (error.errorType.identifier default "ANY"),
+    "description": error.description,
+    "failedComponent": error.failingComponent default "unknown",
+    "reason": error.errorType.identifier default "INTERNAL_SERVER_ERROR",
+    "details": {
+      "message": error.detailedDescription default "Not acceptable",
+      "path": attributes.requestPath default "N/A"
+    }
+  }
+}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[error.errorMessage.attributes.statusCode default 406]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+                <logger doc:name="Error Logger" doc:id="twftarwf" message="#[%dw 2.0
+output application/json
+---
+  payload]" level="ERROR"/>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json  
+---
+{
+  "error": {
+    "correlationId": correlationId,
+    "timeStamp": now() as String {format: "yyyy-MM-dd'T'HH:mm:ss'Z'"},
+    "statusCode": error.errorMessage.attributes.statusCode default 415,
+    "errorType": (error.errorType.namespace default "MULE") ++ ":" ++ (error.errorType.identifier default "ANY"),
+    "description": error.description,
+    "failedComponent": error.failingComponent default "unknown",
+    "reason": error.errorType.identifier default "INTERNAL_SERVER_ERROR",
+    "details": {
+      "message": error.detailedDescription default "Unsupported media type",
+      "path": attributes.requestPath default "N/A"
+    }
+  }
+}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[error.errorMessage.attributes.statusCode default 415]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+                <logger doc:name="Error Logger" doc:id="twftaref32" message="#[%dw 2.0
+output application/json
+---
+  payload]" level="ERROR"/>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json  
+---
+{
+  "error": {
+    "correlationId": correlationId,
+    "timeStamp": now() as String {format: "yyyy-MM-dd'T'HH:mm:ss'Z'"},
+    "statusCode": error.errorMessage.attributes.statusCode default 501,
+    "errorType": (error.errorType.namespace default "MULE") ++ ":" ++ (error.errorType.identifier default "ANY"),
+    "description": error.description,
+    "failedComponent": error.failingComponent default "unknown",
+    "reason": error.errorType.identifier default "INTERNAL_SERVER_ERROR",
+    "details": {
+      "message": error.detailedDescription default "Not Implemented",
+      "path": attributes.requestPath default "N/A"
+    }
+  }
+}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[error.errorMessage.attributes.statusCode default 501]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+                <logger doc:name="Error Logger" doc:id="twftarweff" message="#[%dw 2.0
+output application/json
+---
+  payload]" level="ERROR"/>
+            </on-error-propagate>
+            <on-error-continue type="ANY">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json  
+---
+{
+  "error": {
+    "correlationId": correlationId,
+    "timeStamp": now() as String {format: "yyyy-MM-dd'T'HH:mm:ss'Z'"},
+    "statusCode": error.errorMessage.attributes.statusCode default 500,
+    "errorType": (error.errorType.namespace default "MULE") ++ ":" ++ (error.errorType.identifier default "ANY"),
+    "description": error.description,
+    "failedComponent": error.failingComponent default "unknown",
+    "reason": error.errorType.identifier default "INTERNAL_SERVER_ERROR",
+    "details": {
+      "message": error.detailedDescription default "Not Implemented",
+      "path": attributes.requestPath default "N/A"
+    }
+  }
+}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+            <ee:set-variable variableName="httpStatus"><![CDATA[error.errorMessage.attributes.statusCode default 500]]></ee:set-variable>
+          </ee:variables>
+                </ee:transform>
+        <logger doc:name="Error Logger" doc:id="nwuchf" message="#[%dw 2.0
+output application/json
+---
+  payload]" level="ERROR"/>
+            </on-error-continue>
+        </error-handler>
+    </flow>
+    <flow name="mule-notification-service-spec-console">
+        <http:listener config-ref="Listener-config" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="mule-notification-service-spec-config"></apikit:console>
+        <error-handler>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json  
+---
+{
+  "error": {
+    "correlationId": correlationId,
+    "timeStamp": now() as String {format: "yyyy-MM-dd'T'HH:mm:ss'Z'"},
+    "statusCode": error.errorMessage.attributes.statusCode default 500,
+    "errorType": (error.errorType.namespace default "MULE") ++ ":" ++ (error.errorType.identifier default "ANY"),
+    "description": error.description,
+    "failedComponent": error.failingComponent default "unknown",
+    "reason": error.errorType.identifier default "INTERNAL_SERVER_ERROR",
+    "details": {
+      "message": error.detailedDescription default "Resource not found",
+      "path": attributes.requestPath default "N/A"
+    }
+  }
+}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[404]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="post:\notifications\email:application\json:mule-notification-service-spec-config">
+        <logger level="INFO" message="post:\notifications\email:application\json:mule-notification-service-spec-config"></logger>
+        <flow-ref name="email-notification-sub-flow" doc:name="email-notification-sub-flow"/>
+    </flow>
+    <sub-flow name="email-notification-sub-flow">
+		<json:validate-schema
+			doc:id="435ae99b-6ead-44e9-addc-48c74fbd9e0a"
+			doc:name="Validate schema"
+			schema="schemas/email-request-schema.json"
+		></json:validate-schema>
+		<logger
+			doc:id="c1215ac9-2f4a-4778-9b27-f438b1ec3bc5"
+			doc:name="Logger"
+			message="Email Request Validated Successfully"
+		></logger>
+		<ee:transform
+			doc:id="a1b2c3d4-e5f6-7890-1234-567890abcdef"
+			doc:name="Transform to Java"
+		>
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<email:send
+			bccAddresses="#[payload.send_operation_properties.bccAddresses default []]"
+			ccAddresses="#[payload.send_operation_properties.ccAddresses default []]"
+			config-ref="Smtp"
+			doc:id="47923085-dbb6-4328-b7ab-f17b8653cd84"
+			doc:name="Send"
+			fromAddress="#[payload.send_operation_properties.fromAddress]"
+			replyToAddresses="#[(payload.send_operation_properties.replyToAddresses splitBy &quot;,&quot;) default []]"
+			subject="#[payload.send_operation_properties.subject default &quot;[No Subject]&quot;]"
+			toAddresses="#[payload.send_operation_properties.toAddresses default []]"
+		>
+			<reconnect></reconnect>
+			<email:body
+				contentType="#[payload.send_operation_properties.contentType default &quot;text/html&quot;]"
+				encoding="#[payload.send_operation_properties.encoding default &quot;UTF-8&quot;]"
+			>
+				<email:content><![CDATA[#[payload.send_operation_properties.body default ""]]]></email:content>
+			</email:body>
+      <email:attachments><![CDATA[#[import * from dw::core::Binaries
+---
+payload.send_operation_properties.attachments mapObject (
+    ($$): fromBase64($)
+)]]]></email:attachments>  
+		</email:send>
+		<logger
+			doc:id="638e8fe4-b23a-4bed-b28c-f38e05da0fc2"
+			doc:name="Logger"
+			message="Email Sent Successfully: #[payload]"
+		></logger>
+    <ee:transform doc:name="Transform" doc:id="ntofdp" >
+      <ee:message >
+        <ee:set-payload doc:name="Set payload" doc:id="sedfkt" resource="dwl\response.dwl"/>
+      </ee:message>
+    </ee:transform>
+	</sub-flow>
+</mule>

@@ -1,0 +1,9 @@
+#http listner configurations
+http:
+  port: "8081"
+  host: "0.0.0.0"
+  path: "/api/v1/*"
+  idleTimeout: "60000"
+  readTimeout: "30000"
+  retryCount: "3"
+  retryInterval: "2000"

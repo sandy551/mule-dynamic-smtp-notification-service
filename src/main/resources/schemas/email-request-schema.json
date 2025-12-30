@@ -1,0 +1,139 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Email Send Operation Configuration",
+  "description": "Schema for validating email transmission configuration and operation properties.",
+  "type": "object",
+  "required": [
+    "send_operation_properties",
+    "connection_configuration"
+  ],
+  "properties": {
+    "send_operation_properties": {
+      "type": "object",
+      "title": "Send Operation Properties",
+      "required": [
+        "fromAddress",
+        "toAddresses",
+        "subject",
+        "body"
+      ],
+      "properties": {
+        "fromAddress": {
+          "type": "string",
+          "format": "email",
+          "description": "The email address of the sender."
+        },
+        "toAddresses": {
+          "type": "array",
+          "description": "List of primary recipient email addresses.",
+          "items": {
+            "type": "string",
+            "format": "email"
+          },
+          "minItems": 1
+        },
+        "subject": {
+          "type": "string",
+          "description": "The subject line of the email."
+        },
+        "body": {
+          "type": "string",
+          "description": "The main content/body of the email."
+        },
+        "contentType": {
+          "type": "string",
+          "description": "MIME type of the body content.",
+          "default": "text/plain",
+          "examples": [
+            "text/plain",
+            "text/html"
+          ]
+        },
+        "ccAddresses": {
+          "type": "array",
+          "description": "List of Carbon Copy (CC) recipient email addresses.",
+          "items": {
+            "type": "string",
+            "format": "email"
+          }
+        },
+        "bccAddresses": {
+          "type": "array",
+          "description": "List of Blind Carbon Copy (BCC) recipient email addresses.",
+          "items": {
+            "type": "string",
+            "format": "email"
+          }
+        },
+        "replyToAddresses": {
+          "type": "string",
+          "format": "email",
+          "description": "The email address to use for replies."
+        },
+        "encoding": {
+          "type": "string",
+          "description": "Character encoding for the email.",
+          "default": "UTF-8"
+        },
+        "attachments": {
+          "type": "object",
+          "description": "Key-value pairs representing attachments. Keys are usually filenames.",
+          "additionalProperties": true
+        }
+      }
+    },
+    "connection_configuration": {
+      "type": "object",
+      "title": "Connection Configuration",
+      "required": [
+        "host",
+        "port",
+        "user",
+        "password"
+      ],
+      "properties": {
+        "host": {
+          "type": "string",
+          "format": "hostname",
+          "description": "The SMTP server hostname."
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535,
+          "description": "The port number for the SMTP connection."
+        },
+        "user": {
+          "type": "string",
+          "description": "Username for authentication."
+        },
+        "password": {
+          "type": "string",
+          "description": "Password for authentication."
+        },
+        "properties": {
+          "type": "object",
+          "description": "Additional JavaMail or SMTP properties.",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "connectionTimeout": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Connection timeout in milliseconds."
+        },
+        "readTimeout": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Read timeout in milliseconds."
+        },
+        "writeTimeout": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Write timeout in milliseconds."
+        }
+      }
+    }
+  }
+}

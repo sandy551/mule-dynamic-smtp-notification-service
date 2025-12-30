@@ -1,0 +1,73 @@
+{
+  "basicConstraints": 44,
+  "criticalExtensionOIDs": [
+    "amet",
+    "libero"
+  ],
+  "extendedKeyUsage": [
+    "ut",
+    "vitae",
+    "Fusce"
+  ],
+  "extensions": [
+    {
+      "criticality": false,
+      "oid": "molestie"
+    }
+  ],
+  "issuerAlternativeNames": [
+    {
+      "name": "Adeline",
+      "type": 45
+    }
+  ],
+  "issuerDN": {
+    "commonName": "convallis",
+    "name": "Alexandria"
+  },
+  "issuerUniqueID": [
+    true,
+    true,
+    false
+  ],
+  "issuerX500Principal": {
+    "name": "Carroll"
+  },
+  "keyUsage": [
+    true,
+    false
+  ],
+  "name": "Aaron",
+  "nonCriticalExtensionOIDs": [
+    "In",
+    "erat",
+    "Aliquam"
+  ],
+  "publicKey": {
+    "algorithm": "elit",
+    "modulus": 61,
+    "params": 70,
+    "publicKey": "nunc"
+  },
+  "serialNumber": 96,
+  "serialNumberObject": {
+    "serialNumber": 15
+  },
+  "sigAlgName": "Fusce",
+  "sigAlgOID": "amet",
+  "subjectAlternativeNames": [
+    {
+      "name": "Agueda",
+      "type": 35
+    }
+  ],
+  "subjectDN": {
+    "commonName": "consectetur",
+    "name": "Abbey"
+  },
+  "subjectX500Principal": {
+    "name": "Connie"
+  },
+  "type": "Pellentesque",
+  "version": 68
+}

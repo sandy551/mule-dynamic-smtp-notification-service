@@ -1,0 +1,7 @@
+{
+  "applicationName": "mule-notification-service-s",
+  "runtime": "4.10.0:23e-java17",
+  "replicas": 1,
+  "replicaSize": "0.1",
+  "deploymentModel": "rolling"
+}

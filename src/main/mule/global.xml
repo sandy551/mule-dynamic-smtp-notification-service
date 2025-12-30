@@ -1,0 +1,27 @@
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation=" http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd  http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd  http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+  <configuration-properties doc:name="Configuration properties" file="properties/common-${env}.yaml"></configuration-properties>
+  <http:listener-config name="Listener-config" rejectInvalidTransferEncoding="true">
+    <http:listener-connection connectionIdleTimeout="${http.idleTimeout}" host="${http.host}" port="${http.port}" readTimeout="${http.readTimeout}">
+      <reconnection>
+        <reconnect></reconnect>
+      </reconnection>
+    </http:listener-connection>
+  </http:listener-config>
+  <email:smtp-config defaultEncoding="#[payload.send_operation_properties.encoding default &quot;UTF-8&quot;]" from="#[payload.send_operation_properties.fromAddress]" name="Smtp">
+    <email:smtps-connection connectionTimeout="#[payload.connection_configuration.connectionTimeout default 5000]" host="#[payload.connection_configuration.host]" password="#[payload.connection_configuration.password]" port="#[payload.connection_configuration.port]" readTimeout="#[payload.connection_configuration.readTimeout default 5000]" timeoutUnit="MILLISECONDS" user="#[payload.connection_configuration.user]" writeTimeout="#[payload.connection_configuration.writeTimeout default 5000]">
+      <reconnection>
+        <reconnect></reconnect>
+      </reconnection>
+      <tls:context>
+        <tls:trust-store></tls:trust-store>
+      </tls:context>
+      <email:properties>
+        <email:property key="mail.smtp.starttls.enable" value="true"></email:property>
+        <email:property key="mail.smtp.connectiontimeout" value="6000"></email:property>
+        <email:property key="mail.smtp.timeout" value="6000"></email:property>
+        <email:property key="mail.smtp.writetimeout" value="6000"></email:property>
+        <email:property key="mail.debug" value="true"></email:property>
+      </email:properties>
+    </email:smtps-connection>
+  </email:smtp-config>
+</mule>
