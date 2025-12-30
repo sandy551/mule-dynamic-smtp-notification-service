@@ -244,11 +244,3 @@ Notes:
 - Configure the `mule-maven-plugin` in your `pom.xml` (artifactId/groupId and deploy configuration) for the deploy command above to work. Alternatively, you can use Anypoint CLI in the workflow (login with secure secrets and run a CLI deploy command).
 - Keep **all** credentials (SMTP, Anypoint, tokens) in the CI provider's secret store; never commit them.
 
-Need changes?
---------------
-If you want, I can:
-- Add a fully working GitHub Actions workflow that uses Anypoint CLI (I’ll show exact install & login steps),
-- Replace the schema summary with the full schema inline (original long block), or
-- Add more example responses (e.g., webhook callbacks, delivery receipts).
-
-Tell me which of those you'd prefer and I'll update `README.md` accordingly.
